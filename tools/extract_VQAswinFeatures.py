@@ -1,9 +1,24 @@
-import os, numpy as np, torch
+import os, sys, numpy as np, torch
+repo_root = r'D:\Academics\SEM-5\NVIDIA_miniproj\mmaction2-1'
+sys.path.insert(0, repo_root)
+
 from mmengine import Config
 from mmaction.registry import MODELS, DATASETS
 from mmengine.dataset import DefaultSampler
 from mmengine.runner import Runner
+
+# # Register MMAction2 built-ins used in cfg
+# from mmaction.models.data_preprocessors import ActionDataPreprocessor
+# # Register your custom modules so registries see them
+# from mmaction.datasets.VQA_dataset import VideoQualityDataset  # noqa: F401
+# from mmaction.datasets.transforms.video_quality_pack import VideoQualityPack  # noqa: F401
+# from mmaction.models.recognizers.video_quality_recognizer import VideoQualityRecognizer  # noqa: F401
+# from mmaction.models.heads.VQA_multihead import MultiTaskHead  # noqa: F401
+# from mmaction.evaluation.metrics.VQA_customMetric import VQAMetric  # noqa: F401
 import mmaction.models
+import mmaction.datasets
+import mmaction.evaluation
+
 def global_avg_pool_3d(x):
     return x.mean(dim=[2,3,4])  # [B,C,T,H,W] -> [B,C]
 
