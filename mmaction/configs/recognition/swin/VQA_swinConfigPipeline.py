@@ -9,18 +9,34 @@ from mmengine.dataset import DefaultSampler
 from mmengine.optim import AmpOptimWrapper, LinearLR
 from mmengine.runner import EpochBasedTrainLoop, TestLoop, ValLoop
 from torch.optim import AdamW
-
+import mmaction.models
 from mmaction.datasets import (
     CenterCrop, DecordDecode, DecordInit, FormatShape, VideoQualityPack,
     Resize, SampleFrames, VideoQualityDataset
 )
 from mmaction.engine import SwinOptimWrapperConstructor
 
+# ============================================================
+# CRITICAL FIX: Register custom modules BEFORE building model
+# ============================================================
+custom_imports = dict(
+    imports=[
+        'mmaction.models.data_preprocessors',
+        'mmaction.models.recognizers.video_quality_recognizer',
+        'mmaction.models.heads.VQA_multihead',
+        'mmaction.datasets.VQA_dataset',
+        'mmaction.datasets.transforms.video_quality_pack',
+        'mmaction.evaluation.metrics.VQA_customMetric',
+    ],
+    allow_failed_imports=False
+)
+
 # -----------------------------
 # Model: MultiTaskHead + robust losses
 # -----------------------------
 model.update(
     dict(
+        type='VideoQualityRecognizer',
         data_preprocessor=dict(
             type='ActionDataPreprocessor',
             mean=[123.675, 116.28, 103.53],
