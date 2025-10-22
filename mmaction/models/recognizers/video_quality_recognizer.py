@@ -19,22 +19,6 @@ class VideoQualityRecognizer(BaseRecognizer):
         data_preprocessor (dict): Data preprocessing config
         train_cfg (dict): Training config
         test_cfg (dict): Testing config
-    
-    Example:
-        >>> backbone = dict(
-        ...     type='SwinTransformer3D',
-        ...     patch_size=(2,4,4),
-        ...     embed_dim=96,
-        ...     depths=[2, 2, 6, 2],
-        ...     num_heads=[3, 6, 12, 24],
-        ...     window_size=(8,7,7))
-        >>> cls_head = dict(
-        ...     type='VideoQualityHead',
-        ...     in_channels=768,
-        ...     num_classes=1)
-        >>> recognizer = VideoQualityRecognizer(
-        ...     backbone=backbone,
-        ...     cls_head=cls_head)
     """
     
     def __init__(self, 
@@ -53,6 +37,11 @@ class VideoQualityRecognizer(BaseRecognizer):
                 format_shape='NCTHW'
             )
         
+        # CRITICAL FIX: Build data_preprocessor using mmaction's MODELS registry
+        # before passing to parent, so parent receives the built object not a dict
+        if isinstance(data_preprocessor, dict):
+            data_preprocessor = MODELS.build(data_preprocessor)
+        
         super().__init__(
             backbone=backbone,
             cls_head=cls_head,
@@ -62,6 +51,14 @@ class VideoQualityRecognizer(BaseRecognizer):
         )
     
     def extract_feat(self, inputs: torch.Tensor) -> torch.Tensor:
+        """Extract features from input video tensor.
+        
+        Args:
+            inputs (torch.Tensor): Video tensor [N, C, T, H, W] or [N, M, C, T, H, W]
+        
+        Returns:
+            torch.Tensor: Extracted features [N*M, C]
+        """
         # Flatten multi-clip: [N, M, C, T, H, W] -> [N*M, C, T, H, W]
         if inputs.ndim == 6:
             inputs = inputs.reshape(-1, *inputs.shape[2:])
