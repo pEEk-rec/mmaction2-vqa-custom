@@ -10,7 +10,7 @@ from mmaction.datasets.transforms import *
 from mmaction.registry import TRANSFORMS
 
 
-def create_clean_frame(frame, frame_idx, total_frames=8, zoom_factor=1.0):
+def create_clean_frame(frame, frame_idx, total_frames=16, zoom_factor=1.0):
     """Create clean frame with optional zoom effect."""
     fig, ax = plt.subplots(1, 1, figsize=(8, 6), dpi=100)
     
@@ -58,7 +58,7 @@ def create_stage_gifs(video_path, output_dir=r'D:\Academics\SEM-5\NVIDIA_minipro
     print("\nStage 1: Original frames...")
     decord_init = TRANSFORMS.build(dict(type='DecordInit'))
     sample_frames = TRANSFORMS.build(dict(
-        type='UniformSampleFrames', clip_len=8, num_clips=1, test_mode=False
+        type='UniformSampleFrames', clip_len=16, num_clips=1, test_mode=False
     ))
     decode = TRANSFORMS.build(dict(type='DecordDecode'))
     
@@ -75,7 +75,7 @@ def create_stage_gifs(video_path, output_dir=r'D:\Academics\SEM-5\NVIDIA_minipro
         gif1_frames.append(img)
     
     gif1_path = os.path.join(output_dir, '1_original_frames.gif')
-    imageio.mimsave(gif1_path, gif1_frames, duration=8000, loop=0)  # 1000ms = 1 second per frame
+    imageio.mimsave(gif1_path, gif1_frames, duration=400, loop=0)  # 1000ms = 1 second per frame
     print(f"  Saved: {gif1_path}")
     
     # Stage 2: Resize
@@ -92,7 +92,7 @@ def create_stage_gifs(video_path, output_dir=r'D:\Academics\SEM-5\NVIDIA_minipro
         gif2_frames.append(img)
     
     gif2_path = os.path.join(output_dir, '2_after_resize.gif')
-    imageio.mimsave(gif2_path, gif2_frames, duration=8000, loop=0)  # 1000ms = 1 second per frame
+    imageio.mimsave(gif2_path, gif2_frames, duration=400, loop=0)  # 1000ms = 1 second per frame
     print(f"  Saved: {gif2_path}")
     
     # Stage 3: Center Crop (224x224)
@@ -109,7 +109,7 @@ def create_stage_gifs(video_path, output_dir=r'D:\Academics\SEM-5\NVIDIA_minipro
         gif3_frames.append(img)
     
     gif3_path = os.path.join(output_dir, '3_after_crop.gif')
-    imageio.mimsave(gif3_path, gif3_frames, duration=8000, loop=0)  # 1000ms = 1 second per frame
+    imageio.mimsave(gif3_path, gif3_frames, duration=400, loop=0)  # 1000ms = 1 second per frame
     print(f"  Saved: {gif3_path}")
     
     # Stage 4: Final format
@@ -121,7 +121,7 @@ def create_stage_gifs(video_path, output_dir=r'D:\Academics\SEM-5\NVIDIA_minipro
         gif4_frames.append(img)
     
     gif4_path = os.path.join(output_dir, '4_final_processed.gif')
-    imageio.mimsave(gif4_path, gif4_frames, duration=8000, loop=0)  # 1000ms = 1 second per frame
+    imageio.mimsave(gif4_path, gif4_frames, duration=400, loop=0)  # 1000ms = 1 second per frame
     print(f"  Saved: {gif4_path}")
     
     print("\n" + "="*60)

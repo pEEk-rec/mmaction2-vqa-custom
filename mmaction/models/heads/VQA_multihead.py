@@ -169,32 +169,46 @@ class MultiTaskHead(BaseModule):
         total = loss_qclass + loss_dtype + loss_mos
         return dict(loss=total, loss_qclass=loss_qclass, loss_dtype=loss_dtype, loss_mos=loss_mos)
 
-    @torch.no_grad()
     def predict(self, feats, data_samples, **kwargs):
+        print("="*60)
+        print("[HEAD] predict() called")
+        print(f"[HEAD] Feats shape: {feats.shape}")
+        print(f"[HEAD] Num samples: {len(data_samples)}")
+        
+        # Your existing prediction code
         outs = self.forward(feats, **kwargs)
-
-        total_batch = outs["qclass_logits"].shape[0]
+        
+        total_batch = outs['qclass_logits'].shape[0]
         B = len(data_samples)
-        assert total_batch % B == 0
         num_segs = total_batch // B
-
-        qclass_scores = self._average_clips_scores(
-            outs["qclass_logits"], num_segs, self.average_clips
-        )
-        dtype_scores = self._average_clips_scores(
-            outs["dtype_logits"], num_segs, self.average_clips
-        )
-        mos_pred = self._average_clips_regression(outs["mos"], num_segs).squeeze(-1)
-
+        
+        # Average clips
+        qclass_scores = self._average_clips_scores(outs['qclass_logits'], num_segs, self.average_clips)
+        dtype_scores = self._average_clips_scores(outs['dtype_logits'], num_segs, self.average_clips)
+        mos_pred = self._average_clips_regression(outs['mos'], num_segs).squeeze(-1)
+        
         qclass_pred = qclass_scores.argmax(dim=-1)
         dtype_pred = dtype_scores.argmax(dim=-1)
-
+        
+        print(f"[HEAD] MOS predictions (first 3): {mos_pred[:3].tolist()}")
+        print(f"[HEAD] QClass predictions (first 3): {qclass_pred[:3].tolist()}")
+        
+        # Store predictions in metainfo
         for i, ds in enumerate(data_samples):
-            # Store exactly what the metric reads
-            ds.metainfo["pred_mos"] = float(mos_pred[i].item())
-            ds.metainfo["pred_qclass"] = int(qclass_pred[i].item())
-            ds.metainfo["pred_dtype"] = int(dtype_pred[i].item())
-            # Optionally store scores if your metric uses them later
-            ds.metainfo["pred_qclass_scores"] = qclass_scores[i].detach().cpu()
-            ds.metainfo["pred_dtype_scores"] = dtype_scores[i].detach().cpu()
+            pred_mos_val = float(mos_pred[i].item())
+            pred_qclass_val = int(qclass_pred[i].item())
+            pred_dtype_val = int(dtype_pred[i].item())
+            
+            # Store in metainfo
+            if not hasattr(ds, 'metainfo'):
+                ds.metainfo = {}
+            ds.metainfo['pred_mos'] = pred_mos_val
+            ds.metainfo['pred_qclass'] = pred_qclass_val
+            ds.metainfo['pred_dtype'] = pred_dtype_val
+            
+            # CRITICAL: Also store at top level (for dict conversion)
+            ds.pred_mos = pred_mos_val
+            ds.pred_qclass = pred_qclass_val
+            ds.pred_dtype = pred_dtype_val
+        
         return data_samples

@@ -12,13 +12,6 @@ class VideoQualityRecognizer(BaseRecognizer):
     
     Predicts Mean Opinion Score (MOS) and quality attributes for videos.
     Uses Video Swin Transformer as backbone.
-    
-    Args:
-        backbone (dict): Backbone config (Video Swin Transformer)
-        cls_head (dict): Classification head config (VideoQualityHead)
-        data_preprocessor (dict): Data preprocessing config
-        train_cfg (dict): Training config
-        test_cfg (dict): Testing config
     """
     
     def __init__(self, 
@@ -38,7 +31,6 @@ class VideoQualityRecognizer(BaseRecognizer):
             )
         
         # CRITICAL FIX: Build data_preprocessor using mmaction's MODELS registry
-        # before passing to parent, so parent receives the built object not a dict
         if isinstance(data_preprocessor, dict):
             data_preprocessor = MODELS.build(data_preprocessor)
         
@@ -62,6 +54,14 @@ class VideoQualityRecognizer(BaseRecognizer):
         # Flatten multi-clip: [N, M, C, T, H, W] -> [N*M, C, T, H, W]
         if inputs.ndim == 6:
             inputs = inputs.reshape(-1, *inputs.shape[2:])
+        
+        # If 4D [C, T, H, W], add batch dimension
+        if inputs.ndim == 4:
+            inputs = inputs.unsqueeze(0)  # [1, C, T, H, W]
+        
+        # Ensure correct shape [B, C, T, H, W]
+        if inputs.ndim != 5:
+            raise ValueError(f"Expected 5D input [B,C,T,H,W], got shape {inputs.shape}")
 
         x = self.backbone(inputs)
         if isinstance(x, tuple):
@@ -77,16 +77,7 @@ class VideoQualityRecognizer(BaseRecognizer):
 
     
     def loss(self, inputs, data_samples, **kwargs):
-        """Forward and compute losses.
-        
-        Args:
-            inputs (torch.Tensor): Video tensor [N, C, T, H, W]
-            data_samples (list): List of QualityDataSample with ground truth
-            **kwargs: Additional arguments
-        
-        Returns:
-            dict: Dictionary of losses
-        """
+        """Forward and compute losses."""
         # Extract features
         feats = self.extract_feat(inputs)
         
@@ -95,21 +86,59 @@ class VideoQualityRecognizer(BaseRecognizer):
         
         return losses
     
-    def predict(self, inputs, data_samples, **kwargs):
-        """Inference - predict quality scores.
+    def predict(self, inputs, datasamples, **kwargs):
+        """Inference - predict quality scores."""
+        print("="*60)
+        print("[RECOGNIZER] predict() called")
         
-        Args:
-            inputs (torch.Tensor): Video tensor
-            data_samples (list): List of QualityDataSample
-            **kwargs: Additional arguments
+        # Handle list input from val_step
         
-        Returns:
-            list: Predictions with predicted MOS and attributes
-        """
+        print(f"[RECOGNIZER] Input shape: {inputs.shape}")
+        print(f"[RECOGNIZER] Input dtype: {inputs.dtype}")
+        print(f"[RECOGNIZER] Input range: [{inputs.min():.2f}, {inputs.max():.2f}]")
+        print(f"[RECOGNIZER] Num datasamples: {len(datasamples)}")
+        
         # Extract features
         feats = self.extract_feat(inputs)
         
-        # Get predictions from head
-        predictions = self.cls_head.predict(feats, data_samples, **kwargs)
+        print(f"[RECOGNIZER] Features shape: {feats.shape}")
         
-        return predictions
+        # Get predictions from head - IMPORTANT: capture returned datasamples
+        datasamples = self.cls_head.predict(feats, datasamples, **kwargs)
+        
+        print(f"[RECOGNIZER] Returned {len(datasamples)} predictions")
+        if len(datasamples) > 0:
+            sample = datasamples[0]
+            if hasattr(sample, 'metainfo'):
+                print(f"[RECOGNIZER] Sample 0 metainfo keys: {list(sample.metainfo.keys())}")
+                print(f"[RECOGNIZER] Has pred_mos: {'pred_mos' in sample.metainfo}")
+                if 'pred_mos' in sample.metainfo:
+                    print(f"[RECOGNIZER] pred_mos value: {sample.metainfo['pred_mos']}")
+        print("="*60)
+        
+        return datasamples
+
+    
+    def val_step(self, data):
+        """Validation step - must return predictions with metainfo."""
+        print("\n" + "="*60)
+        print("[RECOGNIZER] val_step() called")
+        print(f"[RECOGNIZER] data keys: {list(data.keys())}")
+        
+        # CRITICAL: Let data_preprocessor handle the data first!
+        # This converts uint8 to float32 and normalizes
+        data = self.data_preprocessor(data, training=False)
+        
+        inputs = data['inputs']
+        datasamples = data['data_samples']
+        
+        print(f"[RECOGNIZER] After preprocessor - inputs type: {type(inputs)}")
+        print(f"[RECOGNIZER] After preprocessor - inputs shape: {inputs.shape}")
+        print(f"[RECOGNIZER] After preprocessor - inputs dtype: {inputs.dtype}")
+        
+        # Now call predict with preprocessed data
+        outputs = self.predict(inputs, datasamples)
+        
+        print(f"[RECOGNIZER] val_step returning {len(outputs)} outputs")
+        print("="*60 + "\n")
+        return outputs
