@@ -15,10 +15,12 @@ from .multitask_video_dataset import MultitaskVideoDataset
 from .finevdMOS_dataset import FineVDDataset
 from .video_quality_dataset import VQA_trial
 from .VQA_dataset import VideoQualityDataset
+from .swin_MOSData import swin_MOSData
 
 __all__ = [
     'AVADataset', 'AVAKineticsDataset', 'ActivityNetDataset', 'AudioDataset',
     'BaseActionDataset', 'PoseDataset', 'RawframeDataset', 'RepeatAugDataset',
     'VideoDataset', 'repeat_pseudo_collate', 'VideoTextDataset',
-    'MSRVTTRetrieval', 'MSRVTTVQA', 'MSRVTTVQAMC', 'CharadesSTADataset', 'MultitaskVideoDataset', 'FineVDDataset', 'VideoQualityDataset', 'VQA_trial'
+    'MSRVTTRetrieval', 'MSRVTTVQA', 'MSRVTTVQAMC', 'CharadesSTADataset', 'MultitaskVideoDataset', 'FineVDDataset', 'VideoQualityDataset', 'VQA_trial',
+    'swin_MOSData'
 ]

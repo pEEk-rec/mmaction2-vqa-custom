@@ -1,0 +1,3 @@
+{"base_lr": 0.0005764705882352943, "lr": 0.0, "data_time": 0.7349713087081909, "loss": 4.489449858665466, "loss_qclass": 1.963604736328125, "loss_dtype": 2.109619140625, "loss_mos": 0.41622602846473455, "time": 3.5929288148880003, "epoch": 1, "iter": 10, "memory": 5667, "step": 10}
+{"base_lr": 0.0010000000000000002, "lr": 0.0, "data_time": 0.41006166405147976, "loss": 4.565548102060954, "loss_qclass": 2.0915154351128473, "loss_dtype": 2.175265842013889, "loss_mos": 0.2987668374682673, "time": 3.1014660199483237, "epoch": 1, "iter": 18, "memory": 5667, "step": 18}
+{"mos_mae": NaN, "mos_rmse": NaN, "mos_srcc": NaN, "mos_plcc": NaN, "qclass_acc": NaN, "dtype_acc": NaN, "data_time": 0.44338683287302655, "time": 0.9369175831476847, "step": 1}

@@ -8,7 +8,9 @@ from .recognizer_gcn import RecognizerGCN
 from .recognizer_omni import RecognizerOmni
 from .Swin_multitask_recognizer import MultitaskRecognizer
 from .video_quality_recognizer import VideoQualityRecognizer
+from .swin_MOSRecognizer import swin_MOSRecognizer
 __all__ = [
     'BaseRecognizer', 'RecognizerGCN', 'Recognizer2D', 'Recognizer3D',
-    'RecognizerAudio', 'RecognizerOmni', 'MMRecognizer3D', 'MultitaskRecognizer', 'VideoQualityRecognizer'
+    'RecognizerAudio', 'RecognizerOmni', 'MMRecognizer3D', 'MultitaskRecognizer', 'VideoQualityRecognizer',
+    'swin_MOSRecognizer'
 ]

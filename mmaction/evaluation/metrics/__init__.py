@@ -9,8 +9,10 @@ from .video_grounding_metric import RecallatTopK
 from .mse_metric import MSEMetric
 from .mos_metric import  MOSMetric, MOSEvaluator
 from .VQA_customMetric import VQAMetric
+from .swin_MOSMetric import swin_MOSMetric
 __all__ = [
     'AccMetric', 'AVAMetric', 'ANetMetric', 'ConfusionMatrix',
     'MultiSportsMetric', 'RetrievalMetric', 'VQAAcc', 'ReportVQA', 'VQAMCACC',
-    'RetrievalRecall', 'RecallatTopK','MSEMetric', 'MOSEvaluator', 'MOSMetric', 'VQAMetric'
+    'RetrievalRecall', 'RecallatTopK','MSEMetric', 'MOSEvaluator', 'MOSMetric', 'VQAMetric',
+    'swin_MOSMetric'
 ]

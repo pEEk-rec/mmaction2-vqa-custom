@@ -20,9 +20,10 @@ from .Swin_multitask_head import MultitaskHead
 from .mos_head import MOSRegressionHead
 from .video_quality_head import VideoQualityHead
 from .VQA_multihead import MultiTaskHead
+from .swin_MOSHead import swin_MOSHead
 __all__ = [
     'BaseHead', 'GCNHead', 'I3DHead', 'MViTHead', 'OmniHead', 'SlowFastHead',
     'TPNHead', 'TRNHead', 'TSMHead', 'TSNAudioHead', 'TSNHead',
     'TimeSformerHead', 'UniFormerHead', 'RGBPoseHead', 'X3DHead', 'FeatureHead', 'I3DRegressionHead', 'MultitaskHead',
-    'MOSRegressionHead', 'VideoQualityHead', 'MultiTaskHead'
+    'MOSRegressionHead', 'VideoQualityHead', 'MultiTaskHead', 'swin_MOSHead'
 ]
