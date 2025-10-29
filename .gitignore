@@ -9,6 +9,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+Konvid/
 build/
 develop-eggs/
 dist/
@@ -120,7 +121,6 @@ venv.bak/
 *.pkl.json
 *.log.json
 benchlist.txt
-work_dirs/
 /projects/*/work_dirs
 /projects/*/data
 .DS_Store
