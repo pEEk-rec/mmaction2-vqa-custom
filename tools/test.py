@@ -3,10 +3,16 @@ import torch
 import numpy as np
 
 # Allow numpy types in checkpoint loading (safe for our own checkpoints)
-torch.serialization.add_safe_globals([np.ndarray])
-torch.serialization.add_safe_globals([np.core.multiarray._reconstruct])
-# This line is new - for the new numpy version
-torch.serialization.add_safe_globals([np._core.multiarray._reconstruct])
+if hasattr(torch.serialization, 'add_safe_globals'):
+    torch.serialization.add_safe_globals([np.ndarray])
+    
+    # Add numpy multiarray support if it exists
+    if hasattr(np.core, 'multiarray'):
+        torch.serialization.add_safe_globals([np.core.multiarray._reconstruct])
+    
+    # For newer numpy versions
+    if hasattr(np, '_core') and hasattr(np._core, 'multiarray'):
+        torch.serialization.add_safe_globals([np._core.multiarray._reconstruct])
 
 _original_load = torch.load
 def patched_load(f, *args, **kwargs):

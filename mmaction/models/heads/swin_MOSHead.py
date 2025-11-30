@@ -18,7 +18,7 @@ class swin_MOSHead(BaseHead):
     Predicts both MOS (regression) and quality class (classification).
     
     Args:
-        num_classes (int): Number of quality classes (e.g., 5 for poor to excellent).
+        num_classes (int): Number of quality classes (e.g., 4 for quality bins).
         in_channels (int): Number of channels in input feature.
         loss_mos (dict or ConfigDict): Config for MOS regression loss.
             Default: dict(type='MSELoss', loss_weight=1.5)
@@ -63,7 +63,10 @@ class swin_MOSHead(BaseHead):
         self.fc_quality = nn.Linear(self.in_channels, self.num_classes)
 
         # Build loss functions
-        self.loss_mos_fn = MODELS.build(loss_mos)
+        self.loss_mos_weight = loss_mos.get('loss_weight', 1.5)
+        self.loss_mos_fn = nn.MSELoss()
+        
+        # Classification loss is in MODELS registry
         self.loss_cls_fn = MODELS.build(loss_cls)
 
     def init_weights(self) -> None:
@@ -79,7 +82,7 @@ class swin_MOSHead(BaseHead):
 
         Returns:
             Tuple[Tensor, Tensor]: 
-                - mos_pred: MOS predictions with shape [N, 1]
+                - mos_pred: MOS predictions with shape [N]
                 - quality_pred: Quality class scores with shape [N, num_classes]
         """
         # Spatial pooling: [N, in_channels, T, H, W] -> [N, in_channels, 1, 1, 1]
@@ -94,7 +97,7 @@ class swin_MOSHead(BaseHead):
         x = x.view(x.shape[0], -1)
 
         # MOS regression head
-        mos_pred = self.fc_mos(x)  # [N, 1]
+        mos_pred = self.fc_mos(x).squeeze(-1)  # [N, 1] -> [N]
 
         # Quality classification head
         quality_pred = self.fc_quality(x)  # [N, num_classes]
@@ -115,15 +118,47 @@ class swin_MOSHead(BaseHead):
         mos_pred, quality_pred = self.forward(feats)
 
         # Extract ground truth from data_samples
-        mos_gt = torch.stack([sample.gt_label.mos for sample in data_samples]).to(feats.device)
-        quality_gt = torch.stack([sample.gt_label.quality_class for sample in data_samples]).to(feats.device)
-
-        # Reshape MOS predictions and targets
-        mos_pred = mos_pred.squeeze(-1)  # [N, 1] -> [N]
-        mos_gt = mos_gt.float()  # Ensure float type
+        quality_gt = []
+        mos_gt = []
+        
+        for sample in data_samples:
+            # Quality class label - gt_label is already a tensor, extract the value
+            if hasattr(sample, 'gt_label'):
+                label = sample.gt_label
+                # Handle both scalar tensors and 1D tensors
+                if label.numel() == 1:
+                    quality_gt.append(label.squeeze())
+                else:
+                    quality_gt.append(label)
+            else:
+                raise ValueError(f"data_sample missing gt_label: {sample}")
+            
+            # MOS score - need to extract from sample
+            if hasattr(sample, 'gt_mos'):
+                mos_value = sample.gt_mos
+                # Handle tensor or scalar
+                if isinstance(mos_value, torch.Tensor):
+                    mos_gt.append(mos_value.squeeze().item() if mos_value.numel() == 1 else mos_value.squeeze())
+                else:
+                    mos_gt.append(float(mos_value))
+            elif hasattr(sample, 'mos'):
+                mos_value = sample.mos
+                if isinstance(mos_value, torch.Tensor):
+                    mos_gt.append(mos_value.squeeze().item() if mos_value.numel() == 1 else mos_value.squeeze())
+                else:
+                    mos_gt.append(float(mos_value))
+            else:
+                # Debug: print available attributes
+                print(f"Available attributes in data_sample: {dir(sample)}")
+                print(f"Data sample content: {sample}")
+                raise ValueError(f"data_sample missing mos/gt_mos: {sample}")
+        
+        # Convert to tensors and move to correct device
+        quality_gt = torch.stack(quality_gt).long().to(feats.device)
+        mos_gt = torch.tensor(mos_gt, dtype=torch.float32, device=feats.device)
 
         # Calculate losses
-        loss_mos = self.loss_mos_fn(mos_pred, mos_gt)
+        loss_mos = self.loss_mos_fn(mos_pred, mos_gt) * self.loss_mos_weight
         loss_quality = self.loss_cls_fn(quality_pred, quality_gt)
 
         # Return loss dict
@@ -141,7 +176,7 @@ class swin_MOSHead(BaseHead):
             data_samples (list): List of data samples.
 
         Returns:
-            list: List of prediction results.
+            list: List of data samples with predictions added.
         """
         # Forward pass
         mos_pred, quality_pred = self.forward(feats)
@@ -150,16 +185,12 @@ class swin_MOSHead(BaseHead):
         quality_pred_labels = quality_pred.argmax(dim=1)
 
         # Clamp MOS predictions to valid range [1.0, 5.0]
-        mos_pred = torch.clamp(mos_pred.squeeze(-1), min=1.0, max=5.0)
+        mos_pred = torch.clamp(mos_pred, min=1.0, max=5.0)
 
-        # Prepare predictions
-        predictions = []
-        for i in range(len(data_samples)):
-            pred_dict = dict(
-                mos=mos_pred[i].item(),
-                quality_class=quality_pred_labels[i].item(),
-                quality_scores=quality_pred[i].cpu().numpy()
-            )
-            predictions.append(pred_dict)
+        # Add predictions to data_samples
+        for i, sample in enumerate(data_samples):
+            sample.pred_mos = mos_pred[i].cpu().item()
+            sample.pred_quality_class = quality_pred_labels[i].cpu().item()
+            sample.pred_quality_scores = quality_pred[i].cpu()
 
-        return predictions
+        return data_samples

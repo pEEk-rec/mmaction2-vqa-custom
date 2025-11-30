@@ -1,8 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
-from typing import Callable, List, Optional, Union
+from typing import Any, Callable, List, Union
 
 import pandas as pd
+import torch
 from mmengine.fileio import exists
 
 from mmaction.registry import DATASETS
@@ -54,8 +55,8 @@ class swin_MOSData(BaseActionDataset):
                  start_index: int = 0,
                  modality: str = 'RGB',
                  test_mode: bool = False,
-                 **kwargs) -> None:
-        self.multi_class = False  # VQA is not multi-class classification
+                 **kwargs):
+        self.multi_class = False
         self.num_classes = None
         super().__init__(
             ann_file,
@@ -89,19 +90,43 @@ class swin_MOSData(BaseActionDataset):
             quality_class = int(row['quality_class'])
             
             # Construct full video path
-            if self.data_prefix['video'] is not None:
+            if self.data_prefix.get('video') is not None:
                 filename = osp.join(self.data_prefix['video'], video_name)
             else:
                 filename = video_name
             
-            # Create data dict
+            # Create data dict with all necessary fields
             data_info = dict(
                 filename=filename,
-                label=quality_class,  # For compatibility with mmaction2
-                mos=mos,              # MOS score for regression
-                quality_class=quality_class  # Quality class for classification
+                label=quality_class,
+                mos=mos,
+                gt_mos=mos,
+                video_score=mos,
+                quality_class=quality_class,
+                video_name=video_name
             )
             
             data_list.append(data_info)
         
         return data_list
+    
+    def prepare_data(self, idx: int) -> Any:
+        """Get data processed by ``self.pipeline``.
+        
+        This override ensures MOS field is preserved through the pipeline.
+        """
+        # Get data info
+        data_info = self.get_data_info(idx)
+        
+        # Store MOS value before pipeline processing
+        mos_value = data_info.get('mos') or data_info.get('gt_mos') or data_info.get('video_score')
+        
+        # Run pipeline
+        result = self.pipeline(data_info)
+        
+        # CRITICAL: Add MOS to data_sample after pipeline processing
+        if result is not None and 'data_samples' in result:
+            # Ensure gt_mos is added to the ActionDataSample
+            result['data_samples'].gt_mos = torch.tensor(float(mos_value), dtype=torch.float32)
+        
+        return result

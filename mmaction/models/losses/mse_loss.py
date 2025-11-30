@@ -1,12 +1,14 @@
-import torch
-from mmengine.model import BaseModule, MODELS
+from mmengine.model import BaseModule
+from mmaction.registry import MODELS
+import torch.nn as nn
 
 @MODELS.register_module()
-class MyMSELoss(BaseModule):
-    def __init__(self, loss_weight=1.0):
-        super().__init__()
-        self.loss_fn = torch.nn.MSELoss()
+class MSELoss(nn.MSELoss):
+    """MSELoss wrapper for MMAction2 registry."""
+    
+    def __init__(self, loss_weight=1.0, **kwargs):
+        super().__init__(**kwargs)
         self.loss_weight = loss_weight
-
+    
     def forward(self, pred, target):
-        return self.loss_weight * self.loss_fn(pred, target)
+        return super().forward(pred, target) * self.loss_weight
