@@ -191,3 +191,15 @@ mmaction/.mim
 AI-VQA/AI-VQA_user.zip
 kinetics400_tiny/kinetics400_tiny/kinetics_tiny_train_video.txt
 kinetics400_tiny/kinetics400_tiny/kinetics_tiny_val_video.txt
+output/Finalstage_gifs2/4_final_processed.gif
+output/Finalstage_gifs2/3_after_crop.gif
+output/Finalstage_gifs2/2_after_resize.gif
+output/Finalstage_gifs2/1_original_frames.gif
+output/Finalstage_gifs1/4_final_processed.gif
+output/Finalstage_gifs1/3_after_crop.gif
+output/Finalstage_gifs1/2_after_resize.gif
+output/Finalstage_gifs1/1_original_frames.gif
+output/Finalstage_gifs/4_final_processed.gif
+output/Finalstage_gifs/3_after_crop.gif
+output/Finalstage_gifs/2_after_resize.gif
+output/Finalstage_gifs/1_original_frames.gif
