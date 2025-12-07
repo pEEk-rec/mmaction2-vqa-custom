@@ -207,3 +207,38 @@ output/Finalstage_gifs/1_original_frames.gif
 features_embedd.zip
 
 
+features_embedd/feature_embedd.zip
+from workstation/swin_AI-VQA_Config.py
+from workstation/swin_AIVQA_ddp_fixed/last_checkpoint
+from workstation/swin_AIVQA_ddp_fixed/swin_AI-VQA_Config.py
+from workstation/swin_AIVQA_ddp_fixed/20251205_140244/vis_data/config.py
+from workstation/swin_AIVQA_ddp_fixed/20251205_142709/vis_data/config.py
+from workstation/swin_AIVQA_ddp_fixed/20251205_144334/vis_data/config.py
+from workstation/swin_AIVQA_ddp_fixed/20251205_150647/vis_data/config.py
+from workstation/swin_AIVQA_ddp_fixed/20251205_152745/vis_data/config.py
+from workstation/swin_AIVQA_ddp_fixed/20251205_153028/vis_data/config.py
+from workstation/swin_AIVQA_ddp_fixed/20251205_154928/vis_data/config.py
+from workstation/swin_AIVQA_ddp_fixed/20251205_165217/vis_data/config.py
+from workstation/swin_AIVQA_ddp_fixed/20251205_165351/vis_data/config.py
+from workstation/swin_AIVQA_ddp_fixed/20251205_173544/vis_data/config.py
+from workstation/swin_AIVQA_ddp_fixed/20251205_183207/vis_data/config.py
+from workstation/swin_AIVQA_ddp_fixed/20251205_183531/vis_data/config.py
+output/Finalstage_gifs/1_original_frames.gif
+output/Finalstage_gifs/2_after_resize.gif
+output/Finalstage_gifs/3_after_crop.gif
+output/Finalstage_gifs/4_final_processed.gif
+output/Finalstage_gifs1/1_original_frames.gif
+output/Finalstage_gifs1/2_after_resize.gif
+output/Finalstage_gifs1/3_after_crop.gif
+output/Finalstage_gifs1/4_final_processed.gif
+output/Finalstage_gifs2/1_original_frames.gif
+output/Finalstage_gifs2/2_after_resize.gif
+output/Finalstage_gifs2/3_after_crop.gif
+output/Finalstage_gifs2/4_final_processed.gif
+stage2_t5large/requirements.txt
+stage2_t5large/t5_train.py
+stage2_t5large/scripts/instructions.py
+stage2_t5large/scripts/load_T5Large.py
+stage2_t5large/scripts/projection.py
+stage2_t5large/scripts/test_t5_large.py
+stage2_t5large/scripts/verify_installation.py

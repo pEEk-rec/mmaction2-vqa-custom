@@ -1,0 +1,53 @@
+======================================================================
+MULTI-LAYER UMAP INVESTIGATION - RECOMMENDATIONS REPORT
+======================================================================
+
+OVERALL BEST LAYER
+----------------------------------------------------------------------
+Layer: stage2
+Score: 1.0000
+
+Justification:
+stage2 achieves the highest aggregate score (1.000) considering silhouette score, Calinski-Harabasz score, and Davies-Bouldin index across all splits. This indicates strong cluster separation and quality discrimination.
+
+
+BEST LAYER FOR QUALITY ASSESSMENT
+----------------------------------------------------------------------
+Layer: stage2
+Avg Silhouette: -0.1322
+
+Justification:
+stage2 shows the strongest clustering for quality classes (avg silhouette: -0.132), suggesting this layer's features are most effective for discriminating between good/poor/bad quality videos.
+
+
+BEST LAYERS FOR ARTIFACT DETECTION
+----------------------------------------------------------------------
+
+Hallucination:
+  Layer: stage2
+  Avg Silhouette: 0.0980
+  Justification: stage2 best separates Hallucination artifacts (silhouette: 0.098). This suggests mid-level object parts and local patterns are most informative for detecting this artifact type.
+
+Lighting:
+  Layer: stage2
+  Avg Silhouette: 0.1058
+  Justification: stage2 best separates Lighting artifacts (silhouette: 0.106). This suggests mid-level object parts and local patterns are most informative for detecting this artifact type.
+
+Spatial:
+  Layer: stage2
+  Avg Silhouette: 0.2597
+  Justification: stage2 best separates Spatial artifacts (silhouette: 0.260). This suggests mid-level object parts and local patterns are most informative for detecting this artifact type.
+
+Rendering:
+  Layer: stage3
+  Avg Silhouette: -0.0066
+  Justification: stage3 best separates Rendering artifacts (silhouette: -0.007). This suggests high-level semantic features are most informative for detecting this artifact type.
+
+
+CONFIDENCE SCORES
+----------------------------------------------------------------------
+Overall: 17.54%
+Quality: 92.35%
+Artifacts: 26.45%
+
+======================================================================
